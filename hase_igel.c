@@ -80,6 +80,7 @@ void print_race_summary(const struct game *g) //paul
         printf("%d : %s (%d)\n", i, g[i].players[i].name, g[i].players_finished[i]);
         i++;
     }
+    
 }
 
 /* Retourne vrai (non nul) s'il n'y a aucun joueur sur la case d'indice `idx` */
