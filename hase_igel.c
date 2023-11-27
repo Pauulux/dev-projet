@@ -45,3 +45,38 @@ static const enum land default_map[] = {
     HASE, CARROT, SALAD, CARROT, CARROT, IGEL, SALAD, HASE, CARROT, FLAG,
     CARROT, HASE, CARROT
 };
+
+int rank(const struct player *p, int player_count, const struct player players[]) //paul
+{
+    int i = 0;
+    int higher_position = 0;
+    
+    while (i < player_count)
+    {
+        if (p->position < players[i].position)
+            higher_position++;
+            
+        i++;
+    }
+    
+    return higher_position;
+    
+};
+
+int is_game_finished(const struct game *g) //paul
+{
+    if (g->finished_count >= g->player_count - 1)
+        return 1;
+    return 0;
+}
+
+void print_race_summary(const struct game *g) //paul
+{
+    int i = 1;
+    
+    while (i < g->player_count)
+    {
+        printf("%d : %s (%d)\n", i, g[i].players[i].name, g[i].players_finished[i]);
+        i++;
+    }
+}
