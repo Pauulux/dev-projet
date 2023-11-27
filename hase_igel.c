@@ -13,7 +13,7 @@ enum party {
 struct player {
     const char *name; // nom du joueur
 
-    int position; // position du joueur sur la carte
+    int position; // position du joueur sur la carte.
 
     int carrots; // nombre de carottes actuellement possédées par un joueur
     int salads; // nombre de salades possédées par un joueur
