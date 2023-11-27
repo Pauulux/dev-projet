@@ -81,6 +81,7 @@ void print_race_summary(const struct game *g) //paul
         i++;
     }
 }
+
 /* Retourne vrai (non nul) s'il n'y a aucun joueur sur la case d'indice `idx` */
 
 int is_space_available(int idx, const struct game *g) // Matteo
