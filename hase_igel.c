@@ -27,6 +27,7 @@ struct game {
     int players_finished[MAX_PLAYERS]; // Le tableau des indices des joueurs arrivés (valide de 0 à finished_count - 1).
 
     int map_length; // nombre de cases du plateau (hors case d'arrivée)
+    const enum land *map // les cases du plateau
 };
 
 // map pour faire des tests :
@@ -80,3 +81,21 @@ void print_race_summary(const struct game *g) //paul
         i++;
     }
 }
+/* Retourne vrai (non nul) s'il n'y a aucun joueur sur la case d'indice `idx` */
+
+int is_space_available(int idx, const struct game *g) // Matteo
+{
+    int i  = 0;
+
+    while (i < g->player_count)
+    {
+        if (g->map[idx] == g->players[i].position)
+        {
+            return 0;
+        }
+
+        i++;
+    }
+
+    return 1;
+};
