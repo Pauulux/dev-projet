@@ -61,7 +61,6 @@ int rank(const struct player *p, int player_count, const struct player players[]
     }
     
     return higher_position;
-    
 };
 
 int is_game_finished(const struct game *g) //paul
