@@ -59,8 +59,19 @@ static const enum land default_map[] = {
     CARROT, HASE, CARROT
 };
 
-int cost(int movement){ // à faire fanny 
-};
+//renvoie le coût d'un déplacement de `movement` cases.
+// le coût d'un déplacement vers l'avant est la somme des entiers de 1 à n, soit : n(n+1) / 2 ;
+// un déplacement vers l'arrière coûte 10 * le nombre de cases.
+
+int cost(int movement){ //Fanny
+    int sum = 0; //somme du nombre de carottes à récupérer/donner
+    int n = movement;
+    if(movement > 0) //si déplacement en avant
+        sum = n * (n + 1) / 2; //on donne sum carottes (nombre positif)
+    else //déplacement en arrière
+        sum = n * 10; //on récupère sum carottes (nombre négatif)
+    return sum;
+}
 
 
 int rank(const struct player *p, int player_count, const struct player players[]) //paul
@@ -85,6 +96,26 @@ int is_game_finished(const struct game *g) //paul
         return 1;
     return 0;
 }
+
+// Retourne vrai (non nul) si le joueur `p` peut franchir la ligne d'arrivée.
+
+int is_finishable(const struct player *p, const struct game *g){ //Fanny
+    if (p->salads == 0){//pas de salade
+        int distance = g->map_length - p->position;
+        int nbcarrots = p->carrots;
+        if(nbcarrots >= cost(distance)){//nbcarottes >= cost(map_length - position du joueur) (positif si cout et négatif si recule)
+            nbcarrots = nbcarrots - cost(distance);
+            int price_end = 10 * (g->finished_count + 1);
+            if(nbcarrots <= price_end){//une fois arrivée sur la case d'arrivée, nbcarottes <= 10*(finished_count + 1 = nombre de joueur ayant terminé la partie))
+                return 1;
+            }
+            else return 0;
+        }
+        else return 0;
+    }
+    else return 0;
+}
+
 
 //permet d'afficher le classement
 void print_race_summary(const struct game *g) //paul
