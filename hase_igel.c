@@ -6,7 +6,15 @@ enum land {
     LAND_COUNT, UNUSED=-1,
 };
 
-static const char *land_representation = "CHSIF234>*@"; // toutes les cases possibles
+static const char *land_representation = "CHSIF234>*@"; // cases du jeu 
+// @ =  pos de l'autre joueur 
+// * = pos du joueur courant 
+// C = case carotte
+// H = case hase
+// S = salade
+// I : case igel 
+
+
 
 enum party {
     MINI_PARTY=1, FUN_PARTY, LONG_PARTY,
@@ -29,7 +37,9 @@ struct game {
     int players_finished[MAX_PLAYERS]; // Le tableau des indices des joueurs arrivés (valide de 0 à finished_count - 1).
 
     int map_length; // nombre de cases du plateau (hors case d'arrivée)
+
     const enum land *map // les cases du plateau
+    // pour accéder au contenu spécifique du tableau (case) g.map[1] == HASE;
 };
 
 // map pour faire des tests :
@@ -48,6 +58,10 @@ static const enum land default_map[] = {
     HASE, CARROT, SALAD, CARROT, CARROT, IGEL, SALAD, HASE, CARROT, FLAG,
     CARROT, HASE, CARROT
 };
+
+int cost(int movement){ // à faire fanny 
+};
+
 
 int rank(const struct player *p, int player_count, const struct player players[]) //paul
 {
