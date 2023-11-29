@@ -6,6 +6,8 @@ enum land {
     LAND_COUNT, UNUSED=-1,
 };
 
+static const char *land_representation = "CHSIF234>*@"; // toutes les cases possibles
+
 enum party {
     MINI_PARTY=1, FUN_PARTY, LONG_PARTY,
 };
@@ -70,6 +72,7 @@ int is_game_finished(const struct game *g) //paul
     return 0;
 }
 
+//permet d'afficher le classement
 void print_race_summary(const struct game *g) //paul
 {
     int i = 1;
@@ -100,3 +103,46 @@ int is_space_available(int idx, const struct game *g) // Matteo
 
     return 1;
 };
+
+
+// Déplace le joueur `p` de `movement` positions en consommant les carottes nécessaires pour réaliser le déplacement.
+
+void move(int movement, struct player *p){ // paul
+    int nb_carrots = 0;
+    if ( (movement > 0) && (p->carrots > cost(movement)) ){ //cas joueur p avance et si joueur p a assez de carotte il peut avancer
+            p->position = p->position + movement; //on change la position du joueur
+            nb_carrots = p->carrots - cost(movement); //on enlève le nbre de carottes associées
+            p->carrots = nb_carrots;
+            printf("Vous avez payé %d carottes. Vous avez maintenant %d carottes.\n", cost(movement), nb_carrots);
+    }
+    else if (movement < 0) { //cas joueur p recule
+        p->position = p->position + movement; //joueur p recule de tant de cases
+        nb_carrots = p->carrots - cost(movement); //joueur p récupère -cost(movement) (nb négatif)
+        p->carrots = nb_carrots;
+        printf("Vous avez récupéré %d carottes.\n", nb_carrots);
+    }
+}
+//faudra ajouter le fait que 2 joueurs ne peuvent pas être sur la même case, jsp si on le prend on compte
+
+/*  à faire: 
+
+1)vérifier une à une les cases précédentes
+2)vérifier que la case est IGEL
+    1- si oui vérifier que la place n'est pas prise par qqn
+        1- case libre -> retourner la position de cette case 
+        1- case non libre -> chercher la prochaine case igel
+*/
+
+// renvoie la pos de la première case igel dispo (donc sans joueur dessus)
+// située avant la position idx ou bien case depart si aucun résultat
+
+int find_previous_igel(int idx, const struct game *g){ // Paul       Pb de parenthèse
+    int i = idx;
+    while( g->map[i] != FIRST_SPACE ){
+        if( (g->map[i] == IGEL) && ( is_space_available(idx, g*) == '1') )
+            return i; //retourne la position de la case igel
+        else
+            i = i - 1;
+    }
+    return FIRST_SPACE; //retourne la case de départ
+}
