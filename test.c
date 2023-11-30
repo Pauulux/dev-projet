@@ -15,10 +15,10 @@ int main(int argc, char *argv[])
                             .map=mini_map};
 
 
-    // print_race_summary(g);
-    //print_race_summary(&g);
+    print_race_summary(g);
+    print_race_summary(&g);
 
-    //printf("%d\n", is_space_available(3, &g));
+    printf("%d\n", is_space_available(3, &g));
 
     is_space_available(3, &g);
     printf("%c\n", space_character(1, &g.players, &g));

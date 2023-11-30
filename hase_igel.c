@@ -216,3 +216,41 @@ char space_character(int space_idx, const struct player *p, const struct game *g
     
     return land_representation[space_idx];
 }
+
+
+
+/* ça permett de retourner l'indice du joueur jouant au prochain tour
+ seuls ceux qui ont pas terminé jouent, si y-a plus de joueurs suivant 
+ (ie jeu terminé) la fonction retourne -1, après le joueur d'index 
+ 'player_count' il faut revenir au joueur d'index 0 (étant le 1er joueur) */
+
+int next_player(int player_idx, const struct game *g)
+    ;
+
+/* tableau `nexts` avec la liste des positions accessibles
+ strictement vers l'avant pour le joueur `p` et doit renvouer le nombre
+ 
+ position accessible si: 
+ case dispo
+ case n'est pas celle d'arrivée (faudra qu'on utilise map_length)
+ case non-igel
+ et si le joueur dispose assez de carotte pour s'y rendre */
+
+int next_moves_forward(const struct player *p, const struct game *g, int nexts[])
+{
+    int idx = p->position + 1; //première case apres le joueur p
+    int movement = 1;
+    int i = 0;
+    int sum = 0;
+    while (idx < g->map_length ){ //tant que cout ok et pas fin map 
+        if ( (is_space_available(idx, g)) && (g->map[idx] != IGEL) && (cost(movement) < p->carrots) ) //case disponible & != IGEL et cout ok
+                           //Tant que il y a assez de carotte donc que cost(movement) < carrots du players
+            nexts[i] = idx;
+            sum = sum + 1;
+        idx++;
+        i++;
+        movement++;
+    }
+    return sum;
+}
+
