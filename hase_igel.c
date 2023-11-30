@@ -1,5 +1,7 @@
 #define MAX_PLAYERS     6
 #define FIRST_SPACE     0
+#define CURRENT_PLAYER_REP land_representation[9]
+#define OTHER_PLAYER_REP land_representation[10]
 
 enum land {
     CARROT, HASE, SALAD, IGEL, FLAG, SECOND, THIRD, FORTH, HOME,
