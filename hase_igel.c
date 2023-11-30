@@ -120,12 +120,15 @@ int is_finishable(const struct player *p, const struct game *g){ //Fanny
 //permet d'afficher le classement
 void print_race_summary(const struct game *g) //paul
 {
-    int i = 1;
+    int i = 0;
+    int classement[MAX_PLAYERS] = {};
     
     while (i < g->player_count)
     {
-        printf("%d : %s (%d)\n", i, g[i].players[i].name, g[i].players_finished[i]);
-        i++;
+        classement[i] = rank(&g->players[i], g->player_count, g->players) +1;
+        
+        printf("%d : %s (%d)\n", i+1, g->players[i].name, classement[i]);
+        i++
     }
     
 }
@@ -190,4 +193,21 @@ int find_previous_igel(int idx, const struct game *g){ // Paul       Pb de paren
             i = i - 1;
     }
     return FIRST_SPACE; //retourne la case de départ
+}
+
+char space_character(int space_idx, const struct player *p, const struct game *g) //Clément //Devrait être bonne
+{
+    if (p->position == space_idx)
+    {
+        return CURRENT_PLAYER_REP;
+    }
+    for (int i = 0; i < g->player_count; i++)
+    {
+        if (space_idx == g->players[i].position)
+        {
+            return OTHER_PLAYER_REP;
+        }
+    }
+    
+    return land_representation[space_idx];
 }
