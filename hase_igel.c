@@ -139,9 +139,9 @@ int is_space_available(int idx, const struct game *g) // Matteo
 {
     int i  = 0;
 
-    while (i < g->player_count)
-    {
-        if (g->map[idx] == g->players[i].position)
+        while (i <= g->player_count)    
+        {
+        if (idx == g->players[i].position)
         {
             return 0;
         }
@@ -187,7 +187,7 @@ void move(int movement, struct player *p){ // paul
 int find_previous_igel(int idx, const struct game *g){ // Paul       Pb de parenthèse
     int i = idx;
     while( g->map[i] != FIRST_SPACE ){
-        if( (g->map[i] == IGEL) && ( is_space_available(idx, g*) == '1') )
+        if( (g->map[i] == IGEL) && ( is_space_available(idx, g) == 1) )
             return i; //retourne la position de la case igel
         else
             i = i - 1;
