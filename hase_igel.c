@@ -1,7 +1,5 @@
 #define MAX_PLAYERS     6
 #define FIRST_SPACE     0
-#define CURRENT_PLAYER_REP land_representation[9]
-#define OTHER_PLAYER_REP land_representation[10]
 
 enum land {
     CARROT, HASE, SALAD, IGEL, FLAG, SECOND, THIRD, FORTH, HOME,
@@ -130,13 +128,10 @@ void print_race_summary(const struct game *g) //paul
         classement[i] = rank(&g->players[i], g->player_count, g->players) +1;
         
         printf("%d : %s (%d)\n", i+1, g->players[i].name, classement[i]);
-        i++;
+        i++
     }
     
-    return 1;
-
-    
-};
+}
 
 /* Retourne vrai (non nul) s'il n'y a aucun joueur sur la case d'indice `idx` */
 
@@ -189,10 +184,10 @@ void move(int movement, struct player *p){ // paul
 // renvoie la pos de la première case igel dispo (donc sans joueur dessus)
 // située avant la position idx ou bien case depart si aucun résultat
 
-int find_previous_igel(int idx, const struct game *g){ // Paul 
+int find_previous_igel(int idx, const struct game *g){ // Paul       Pb de parenthèse
     int i = idx;
     while( g->map[i] != FIRST_SPACE ){
-        if( (g->map[i] == IGEL) && ( is_space_available(idx, g) == 1) )
+        if( (g->map[i] == IGEL) && ( is_space_available(idx, g*) == '1') )
             return i; //retourne la position de la case igel
         else
             i = i - 1;
@@ -200,7 +195,7 @@ int find_previous_igel(int idx, const struct game *g){ // Paul
     return FIRST_SPACE; //retourne la case de départ
 }
 
-char space_character(int space_idx, const struct player *p, const struct game *g) 
+char space_character(int space_idx, const struct player *p, const struct game *g)
 {
     if (p->position == space_idx)
     {
@@ -217,34 +212,67 @@ char space_character(int space_idx, const struct player *p, const struct game *g
     return land_representation[space_idx];
 }
 
+int in_array(int valeur, int len, const int tableau[]) //Matteo
+{
+    int i = 0;
+    
+    while (i < len)
+    {
+        if (valeur == tableau[i])
+            return i;
+        i++;
+    }
+    
+    return -1;
+}
 
-
-/* ça permett de retourner l'indice du joueur jouant au prochain tour
- seuls ceux qui ont pas terminé jouent, si y-a plus de joueurs suivant 
- (ie jeu terminé) la fonction retourne -1, après le joueur d'index 
- 'player_count' il faut revenir au joueur d'index 0 (étant le 1er joueur) */
-
-int next_player(int player_idx, const struct game *g)
-    ;
-
-/* tableau `nexts` avec la liste des positions accessibles
- strictement vers l'avant pour le joueur `p` et doit renvouer le nombre
+/**
+  Affiche la carte d'une partie `g` du point de vue du player `p` sur la sortie standard, au format :
  
- position accessible si: 
- case dispo
- case n'est pas celle d'arrivée (faudra qu'on utilise map_length)
- case non-igel
- et si le joueur dispose assez de carotte pour s'y rendre */
+  <Plateau-de-jeu>|<joueurs arrivés>
+ 
+  Les cases du plateau de jeu sont séparées par un espace et la ligne est
+  terminée par un saut de ligne.
+ 
+  Exemple :
+  > H C S I C S * @ C |31
+ */
 
+void print_map(const struct player *p, const struct game *g) 
+{
+    for (int i = 0 ; i < g->map_length ; i++)
+    {
+        printf("%c ", space_character(i, p, g));
+    }
+    printf("|");
+    for (int i = 0; i < g->finished_count; i++)
+    {
+        if (g->players_finished[i]!=0)
+        {
+            printf("%d", g->players_finished[g->player_count - i]+1);
+        }
+        
+    }
+    printf("\n");
+}
+
+
+/*
+  Remplit le tableau `nexts` avec la liste des positions accessibles strictement vers l'avant pour le joueur `p` et en retourne le nombre.
+  Une position est accessible si :
+  - La case est disponible,
+  - La case n'est pas la case d'arrivée (`map_length`)
+  - Ce n'est pas un IGEL
+  - Le joueur dispose d'assez de carottes pour l'atteindre.
+ */
 int next_moves_forward(const struct player *p, const struct game *g, int nexts[])
 {
-    int idx = p->position + 1; //première case apres le joueur p
+    int idx = p->position + 1;
     int movement = 1;
     int i = 0;
     int sum = 0;
-    while (idx < g->map_length ){ //tant que cout ok et pas fin map 
+    while (idx < g->map_length ){ 
         if ( (is_space_available(idx, g)) && (g->map[idx] != IGEL) && (cost(movement) < p->carrots) ) //case disponible & != IGEL et cout ok
-                           //Tant que il y a assez de carotte donc que cost(movement) < carrots du players
             nexts[i] = idx;
             sum = sum + 1;
         idx++;
@@ -254,3 +282,18 @@ int next_moves_forward(const struct player *p, const struct game *g, int nexts[]
     return sum;
 }
 
+/*
+Tant que il y a assez de carotte donc que cost(movement) < carrots du players*/
+/**
+  Retourne vrai (non zero) si le joueur p peut rester sur sa case.
+  Ceci n'est possible que sur les cases carottes
+*/
+
+extern int can_stay(const struct player *p, const struct game *g);
+
+/**
+ Remplit le tableau `nexts` avec la liste des positions accessibles pour le joueur, que ce soit vers l'avant, sur place ou vers l'arrière.
+ */
+
+int next_moves(const struct player *p, const struct game *g, int nexts[])
+    ;
