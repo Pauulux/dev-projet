@@ -1,5 +1,7 @@
 #define MAX_PLAYERS     6
 #define FIRST_SPACE     0
+#define CURRENT_PLAYER_REP land_representation[9]
+#define OTHER_PLAYER_REP land_representation[10]
 
 enum land {
     CARROT, HASE, SALAD, IGEL, FLAG, SECOND, THIRD, FORTH, HOME,
@@ -128,10 +130,13 @@ void print_race_summary(const struct game *g) //paul
         classement[i] = rank(&g->players[i], g->player_count, g->players) +1;
         
         printf("%d : %s (%d)\n", i+1, g->players[i].name, classement[i]);
-        i++
+        i++;
     }
     
-}
+    return 1;
+
+    
+};
 
 /* Retourne vrai (non nul) s'il n'y a aucun joueur sur la case d'indice `idx` */
 
@@ -184,10 +189,10 @@ void move(int movement, struct player *p){ // paul
 // renvoie la pos de la première case igel dispo (donc sans joueur dessus)
 // située avant la position idx ou bien case depart si aucun résultat
 
-int find_previous_igel(int idx, const struct game *g){ // Paul       Pb de parenthèse
+int find_previous_igel(int idx, const struct game *g){ // Paul 
     int i = idx;
     while( g->map[i] != FIRST_SPACE ){
-        if( (g->map[i] == IGEL) && ( is_space_available(idx, g*) == '1') )
+        if( (g->map[i] == IGEL) && ( is_space_available(idx, g) == 1) )
             return i; //retourne la position de la case igel
         else
             i = i - 1;
@@ -195,7 +200,7 @@ int find_previous_igel(int idx, const struct game *g){ // Paul       Pb de paren
     return FIRST_SPACE; //retourne la case de départ
 }
 
-char space_character(int space_idx, const struct player *p, const struct game *g) //Clément //Devrait être bonne
+char space_character(int space_idx, const struct player *p, const struct game *g) 
 {
     if (p->position == space_idx)
     {
