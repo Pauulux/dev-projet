@@ -122,17 +122,25 @@ int is_finishable(const struct player *p, const struct game *g){ //Fanny
 //permet d'afficher le classement
 void print_race_summary(const struct game *g) //paul
 {
-    int i = 0;
     int classement[MAX_PLAYERS] = {};
-    
-    while (i < g->player_count)
+ 
+    for (int i = 0; i < g->player_count; i++)
     {
-        classement[i] = rank(&g->players[i], g->player_count, g->players) +1;
+        if(i < g->finished_count)
+        {
+            classement[i] = g->players_finished[i];
+        }
         
-        printf("%d : %s (%d)\n", i+1, g->players[i].name, classement[i]);
-        i++
+        classement[i] = rank(&g->players[i], g->player_count, g->players) +1;
+        for (int j = 0; j < i; j++)
+        {
+            if (classement[i] == classement[j])
+            {
+                classement[i] = classement[j]+1;
+            }
+        }
+        printf("%d: %s (%d)\n", i+1, g->players[i].name, classement[i]);
     }
-    
 }
 
 /* Retourne vrai (non nul) s'il n'y a aucun joueur sur la case d'indice `idx` */
@@ -186,13 +194,12 @@ void move(int movement, struct player *p){ // paul
 // renvoie la pos de la première case igel dispo (donc sans joueur dessus)
 // située avant la position idx ou bien case depart si aucun résultat
 
-int find_previous_igel(int idx, const struct game *g){ // Paul       Pb de parenthèse
-    int i = idx;
+int find_previous_igel(int idx, const struct game *g){ // Paul      
     while( g->map[i] != FIRST_SPACE ){
         if( (g->map[i] == IGEL) && ( is_space_available(idx, g) == 1) )
-            return i; //retourne la position de la case igel
+            return idx; //retourne la position de la case igel
         else
-            i = i - 1;
+            idx = idx - 1;
     }
     return FIRST_SPACE; //retourne la case de départ
 }
@@ -263,8 +270,18 @@ void print_map(const struct player *p, const struct game *g)
  (ie jeu terminé) la fonction retourne -1, après le joueur d'index 
  'player_count' il faut revenir au joueur d'index 0 (étant le 1er joueur) */
 
-int next_player(int player_idx, const struct game *g)
-    ;
+int next_player(int player_idx, const struct game *g);
+{
+    int next_idx = (player_idx + 1) % g->player_count;
+    if(is_game_finished(g)) //si il ne peut y avoir de joueur suivant
+        return -1;
+    for(int i = 0; i < g->finished_count; i++) //on fait indice suivant tant que 
+    {
+        if(in_array(next_idx, g->finished_count, g->players_finished) > -1)
+            next_idx = (next_idx + 1) % g->player_count;
+    }
+    return next_idx;
+}
 
 /* tableau `nexts` avec la liste des positions accessibles
  strictement vers l'avant pour le joueur `p` et doit renvouer le nombre
@@ -307,5 +324,60 @@ extern int can_stay(const struct player *p, const struct game *g);
  Remplit le tableau `nexts` avec la liste des positions accessibles pour le joueur, que ce soit vers l'avant, sur place ou vers l'arrière.
  */
 
-int next_moves(const struct player *p, const struct game *g, int nexts[])
-    ;
+int next_moves(const struct player *p, const struct game *g, int nexts[]);
+    {int idx = p->position; //indice de la case qu'on regarde
+    int sum = next_moves_forward(p, g, nexts);//remplit nexts des cases possible devant
+    if(is_finishable(p, g)){ //si jeu finissable remplir tab de 1 elt
+        nexts[sum] = g->map_length - p->position;
+        sum++;   
+    }
+    if(p->position > 0){
+        nexts[sum] = find_previous_igel(idx, g) - p->position;    //Pb : Move regarde si le mouvement est négatif mais next_moves
+        sum++;                                      //ne donne jamais de nombre négatif, donc le joueur ne recule jamais
+    }  
+    
+    return sum;  
+}
+
+void init_game(struct game *g, int player_count, char *names[], int carrot, int salad) //matteo
+{
+    g->player_count = player_count-1;
+    
+    for (int i = 0; i < g->player_count+1; i++)
+    {
+        g->players[i].name = names[i+1];
+        g->players[i].carrots = carrot;
+        g->players[i].salads = salad;
+        g->players[i].position = FIRST_SPACE;
+    }  
+}
+void player_finished(int player_idx, struct game *g) //matteo
+{
+    if (g->players[player_idx].position >= g->map_length)
+    {
+        g->players_finished[g->finished_count] = player_idx;
+        g->finished_count ++;
+    } 
+}
+
+void print_game_parametres(struct game *g) // matteo
+{
+    printf("Player count : %d\nPlayers:\n", g->player_count);
+    for (int i = 0; i < g->player_count; i++)
+    {
+        printf("%d: %s\n", i+1, g->players[i].name);
+    }
+    printf("\nMap: ");
+    print_map(&g->players[0], g);
+    printf("\n");
+}
+void print_player_parametres(int player_idx, int *nexts, struct game *g) // matteo
+{
+    printf("Joueur %d (%s): \n", player_idx+1, g->players[player_idx].name);       //Name
+    printf("Nombre de carottes: %d\n", g->players[player_idx].carrots);            //Nb Carottes
+    printf("Possibilitées: ");                                                     //Ses moves possibles
+    for (int i = 0; i < next_moves(&g->players[player_idx], g, nexts); i++)    
+    {                                                                 
+        printf("%d ", nexts[i]);
+    }
+}
