@@ -270,7 +270,7 @@ void print_map(const struct player *p, const struct game *g)
  (ie jeu terminé) la fonction retourne -1, après le joueur d'index 
  'player_count' il faut revenir au joueur d'index 0 (étant le 1er joueur) */
 
-int next_player(int player_idx, const struct game *g);
+int next_player(int player_idx, const struct game *g)
 {
     int next_idx = (player_idx + 1) % g->player_count;
     if(is_game_finished(g)) //si il ne peut y avoir de joueur suivant
@@ -324,7 +324,7 @@ extern int can_stay(const struct player *p, const struct game *g);
  Remplit le tableau `nexts` avec la liste des positions accessibles pour le joueur, que ce soit vers l'avant, sur place ou vers l'arrière.
  */
 
-int next_moves(const struct player *p, const struct game *g, int nexts[]);
+int next_moves(const struct player *p, const struct game *g, int nexts[])
     {int idx = p->position; //indice de la case qu'on regarde
     int sum = next_moves_forward(p, g, nexts);//remplit nexts des cases possible devant
     if(is_finishable(p, g)){ //si jeu finissable remplir tab de 1 elt

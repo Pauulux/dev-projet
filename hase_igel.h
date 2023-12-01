@@ -10,8 +10,8 @@ enum land {
 };
 
 static const char *land_representation = "CHSIF234>*@"; // cases du jeu 
-// @ =  pos de l'autre joueur 
-// * = pos du joueur courant 
+// @ =  position de l'autre joueur 
+// * = position du joueur courant 
 // C = case carotte
 // H = case hase
 // S = salade
