@@ -125,8 +125,6 @@ void init_game(struct game *g, int player_count, char *names[], int carrot, int 
 void print_game_parametres(struct game *g);
 
 void print_player_parametres(int player_idx, int *nexts, struct game *g);
-
-void meet_hase(int player_idx, struct player *p);
   
 void prepare_play(int player_idx, struct game *g);
     
@@ -137,3 +135,5 @@ void eat_salad(int player_idx, struct game *g);
 void eat_carrot(int player_idx, struct game *g);
 
 void eat_s_or_c(int player_idx, struct game *g); //salade ou carrote
+
+void joueur(int j, int *nexts, struct game *g);

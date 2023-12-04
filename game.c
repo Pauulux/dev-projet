@@ -28,12 +28,15 @@ int main(int argc, char *argv[])
      //Lancement de la partie
     for (int i = 0; i < MAX_PLAY; i++)     //limite de tour (MAX_PLAY)
     {
-        printf("\n   -- Tour : %d --\n", i+1);
+        if(player == 0)
+        printf("\n   -- Tour : %d --\n", i/g.player_count+1); 
 
         prepare_play(player, &g);
 
         print_player_parametres(j, nexts, &g); //Affichage indication du joueur à ce tour
         
+        joueur(player, nexts, &g);
+
         end_play(player, &g);
 
         //Affichage podium si fin de partie
@@ -55,3 +58,9 @@ int main(int argc, char *argv[])
     
     return 0;
 }
+
+/** 
+ * Petits bugs : 
+ * - Affichage Tour
+ * - Affichage podium parfois
+ * - Nombre de carrotes qui par en live d'un tour à l'autre

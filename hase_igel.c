@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include "stdlib.h"
+#include "string.h"
+
 #define MAX_PLAYERS     6
 #define FIRST_SPACE     0
 #define CURRENT_PLAYER_REP land_representation[9]
@@ -176,7 +180,7 @@ void move(int movement, struct player *p){ // paul
         p->position = p->position + movement; //joueur p recule de tant de cases
         nb_carrots = p->carrots - cost(movement); //joueur p récupère -cost(movement) (nb négatif)
         p->carrots = nb_carrots;
-        printf("Vous avez récupéré %d carottes.\n", nb_carrots);
+        printf("Vous avez maintenant %d carottes.\n", nb_carrots);
     }
 }
 //faudra ajouter le fait que 2 joueurs ne peuvent pas être sur la même case, jsp si on le prend on compte
@@ -194,7 +198,7 @@ void move(int movement, struct player *p){ // paul
 // située avant la position idx ou bien case depart si aucun résultat
 
 int find_previous_igel(int idx, const struct game *g){ // Paul      
-    while( g->map[i] != FIRST_SPACE ){
+    while( g->map[idx] != HOME){ //tant que la case est différente de HOME faire
         if( (g->map[i] == IGEL) && ( is_space_available(idx, g) == 1) )
             return idx; //retourne la position de la case igel
         else
@@ -205,7 +209,7 @@ int find_previous_igel(int idx, const struct game *g){ // Paul
 
 char space_character(int space_idx, const struct player *p, const struct game *g)
 {
-    if (p->position == space_idx)
+    if (p != NULL && p->position == space_idx) // vérifie aussi si la position du joueur n'est pas nulle
     {
         return CURRENT_PLAYER_REP;
     }
@@ -231,7 +235,7 @@ int in_array(int valeur, int len, const int tableau[]) //Matteo
         i++;
     }
     
-    return -1;
+    return -1000;
 }
 
 /**
@@ -252,12 +256,13 @@ void print_map(const struct player *p, const struct game *g)
     {
         printf("%c ", space_character(i, p, g));
     }
-    printf("|");
-    for (int i = 0; i < g->finished_count; i++)
+    printf(" | ");
+
+    for (int i = g->finished_count ; i > 0 ; i--)
     {
         if (g->players_finished[i]!=0)
         {
-            printf("%d", g->players_finished[g->player_count - i]+1);
+        printf("%d", g->players_finished[i-1]+1);  
         }
         
     }
@@ -294,16 +299,18 @@ int next_player(int player_idx, const struct game *g)
 int next_moves_forward(const struct player *p, const struct game *g, int nexts[])
 {
     int idx = p->position + 1; //première case apres le joueur p
-    int movement = 1;
-    int i = 0;
-    int sum = 0;
-    while (idx < g->map_length ){ //tant que cout ok et pas fin map 
-        if ( (is_space_available(idx, g)) && (g->map[idx] != IGEL) && (cost(movement) < p->carrots) ) //case disponible & != IGEL et cout ok
-                           //Tant que il y a assez de carotte donc que cost(movement) < carrots du players
-            nexts[i] = idx;
-            sum = sum + 1;
+    int movement = 1; //mouvement pour cout en carotte
+    int i = 0; // indexation 
+    int sum = 0; // à retourner à la fin
+    while ( ( idx < g->map_length ) &&  (cost(movement) <= p->carrots) )
+    { //tant que cout ok et pas fin map 
+        if ( (is_space_available(idx, g)) && (g->map[idx] != IGEL) )
+        { //case disponible & != IGEL
+            nexts[i] = idx - p->position;
+            sum++;
+            i++;
+        }
         idx++;
-        i++;
         movement++;
     }
     return sum;
@@ -311,17 +318,20 @@ int next_moves_forward(const struct player *p, const struct game *g, int nexts[]
 
 
 /*
-Tant que il y a assez de carotte donc que cost(movement) < carrots du players*/
-/**
+Tant que il y a assez de carotte donc que cost(movement) < carrots du players
   Retourne vrai (non zero) si le joueur p peut rester sur sa case.
   Ceci n'est possible que sur les cases carottes
 */
 
-extern int can_stay(const struct player *p, const struct game *g);
-
-/**
- Remplit le tableau `nexts` avec la liste des positions accessibles pour le joueur, que ce soit vers l'avant, sur place ou vers l'arrière.
- */
+extern int can_stay(const struct player *p, const struct game *g)
+{
+    if ((g->map[p->position] == SALAD) || (g->map[p->position] == CARROT))
+    {
+        return 1;
+    }
+    
+    return 0;
+}
 
 int next_moves(const struct player *p, const struct game *g, int nexts[])
     {int idx = p->position; //indice de la case qu'on regarde
@@ -334,7 +344,7 @@ int next_moves(const struct player *p, const struct game *g, int nexts[])
     }
 
     if (can_stay(p,g) != 0){ //si on peut rester remplir tab de 1 elt
-        nexts[sum] = idx;
+        nexts[sum] = 0;
         sum++;
     }
 
@@ -348,6 +358,20 @@ int next_moves(const struct player *p, const struct game *g, int nexts[])
 
 void init_game(struct game *g, int player_count, char *names[], int carrot, int salad) //matteo
 {
+    char *map = getenv("MAP");
+
+    //choix de la map 
+    if (strncmp(map, "mini", 4) == 0)
+    {
+        g->map = mini_map;
+        g->map_length = 10;
+    }
+    else
+    {
+        g->map = default_map;
+        g->map_length = 64; 
+    }
+
     g->player_count = player_count-1;
     
     for (int i = 0; i < g->player_count+1; i++)
@@ -356,7 +380,11 @@ void init_game(struct game *g, int player_count, char *names[], int carrot, int 
         g->players[i].carrots = carrot;
         g->players[i].salads = salad;
         g->players[i].position = FIRST_SPACE;
-    }  
+    } 
+
+    system("clear");
+    printf("--- Hase & Igel ---\n\n");  // début du jeu  
+
 }
 void player_finished(int player_idx, struct game *g) //matteo
 {
@@ -369,7 +397,7 @@ void player_finished(int player_idx, struct game *g) //matteo
 
 void print_game_parametres(struct game *g) // matteo
 {
-    printf("Player count : %d\nPlayers:\n", g->player_count);
+    printf("Players:\n");
     for (int i = 0; i < g->player_count; i++)
     {
         printf("%d: %s\n", i+1, g->players[i].name);
@@ -382,19 +410,34 @@ void print_player_parametres(int player_idx, int *nexts, struct game *g) // matt
 {
     printf("Joueur %d (%s): \n", player_idx+1, g->players[player_idx].name);       //Name
     printf("Nombre de carottes: %d\n", g->players[player_idx].carrots);            //Nb Carottes
-    printf("Possibilitées: ");                                                     //Ses moves possibles
+    printf("Possibilitées: ");
+    
+    if (next_moves(&g->players[player_idx], g, nexts) <= 0) // cas ou le joueur ne peut pas faire de mouvement
+    {
+        printf("[Aide] Malheureusement, vous ne pouvez rien faire ...");
+    }
+    
     for (int i = 0; i < next_moves(&g->players[player_idx], g, nexts); i++)    
     {                                                                 
         printf("%d ", nexts[i]);
     }
+    printf("\n");
+    print_map(&g->players[player_idx], g);
 }
 
 void prepare_play(int player_idx, struct game *g)
 {
-    if (g->players[player_idx].salad_seasonned >= 1)
+    if(g->players[player_idx].carrots <= 0)
     {
-        g->players[player_idx].carrots = 10*g->players[player_idx].position;
-        g->players[player_idx].salad_seasonned --;
+        g->players[player_idx].carrots = 0;
+    }
+    if(g->players[player_idx].salads <= 0)
+    {
+        g->players[player_idx].salads = 0;
+    }
+    if(g->players[player_idx].position <= 0)
+    {
+        g->players[player_idx].position = 0;
     }
 }
 
@@ -419,7 +462,6 @@ extern int can_stay(const struct player *p, const struct game *g)
 void eat_salad(int player_idx, struct game *g)
 {
     g->players[player_idx].salads--;
-    g->players[player_idx].salad_seasonned++;  
 }
 
 void eat_carrot(int player_idx, struct game *g)
@@ -472,5 +514,37 @@ void eat_s_or_c(int player_idx, struct game *g)
     else if (g->map[g->players[player_idx].position] == CARROT)
     {
         eat_carrot(player_idx, g);
+    }
+}
+
+ void choose_init_game(struct game *g, int player_count, char *names[], const enum land *map) 
+{
+    char party[51] = {};
+    int party_type = 0;
+
+    fgets(party, 50, stdin); //Transformer le char "mini party" en 1 etc...
+
+    switch (party_type)
+    {
+    case MINI_PARTY: //1
+        init_game(g, player_count, names, 10, 1);
+        g->player_count = 10;
+        g->map = map;
+        break;
+    
+    case FUN_PARTY: //2
+        init_game(g, player_count, names, 30, 2);
+        g->player_count = 64;
+        g->map = map;
+        break;
+
+    case LONG_PARTY: //3
+        init_game(g, player_count, names, 10, 1);
+        g->player_count = 64;
+        g->map = map;
+        break;
+
+    default:
+        break;
     }
 }
