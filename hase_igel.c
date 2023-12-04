@@ -566,7 +566,7 @@ void eat_s_or_c(int player_idx, struct game *g)
     }
 }
 
- void choose_init_game(struct game *g, int player_count, char *names[], const enum land *map) 
+void choose_init_game(struct game *g, int player_count, char *names[]) //Pour la version finale
 {
     char party[51] = {};
     int party_type = 0;

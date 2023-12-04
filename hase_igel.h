@@ -41,7 +41,7 @@ struct game {
 
     int map_length; // nombre de cases du plateau (hors case d'arrivée)
 
-    const enum land *map // les cases du plateau
+    const enum land *map; // les cases du plateau
     // pour accéder au contenu spécifique du tableau (case) g.map[1] == HASE;
 };
 
@@ -66,29 +66,29 @@ static const enum land default_map[] = {
 // le coût d'un déplacement vers l'avant est la somme des entiers de 1 à n, soit : n(n+1) / 2 ;
 // un déplacement vers l'arrière coûte 10 * le nombre de cases.
 
-int cost(int movement)
+int cost(int movement);
 
 int in_array(int valeur, int len, const int tableau[]);
 
-int rank(const struct player *p, int player_count, const struct player players[]) //paul
+int rank(const struct player *p, int player_count, const struct player players[]); //paul
 
-int is_game_finished(const struct game *g) //paul
+int is_game_finished(const struct game *g); //paul
 
 // Retourne vrai (non nul) si le joueur `p` peut franchir la ligne d'arrivée.
 
-int is_finishable(const struct player *p, const struct game *g) //Fanny
+int is_finishable(const struct player *p, const struct game *g); //Fanny
 
 
 //permet d'afficher le classement
-void print_race_summary(const struct game *g) //paul
+void print_race_summary(const struct game *g); //paul
 
 /* Retourne vrai (non nul) s'il n'y a aucun joueur sur la case d'indice `idx` */
 
-int is_space_available(int idx, const struct game *g) // Matteo
+int is_space_available(int idx, const struct game *g); // Matteo
 
 // Déplace le joueur `p` de `movement` positions en consommant les carottes nécessaires pour réaliser le déplacement.
 
-void move(int movement, struct player *p) // paul
+void move(int movement, struct player *p); // paul
 //faudra ajouter le fait que 2 joueurs ne peuvent pas être sur la même case, jsp si on le prend on compte
 
 /*  à faire: 
@@ -138,7 +138,7 @@ void eat_s_or_c(int player_idx, struct game *g); //salade ou carrote
 
 void joueur(int j, int *nexts, struct game *g);
 
-void choose_init_game(struct game *g, int player_count, char *names[])
+void choose_init_game(struct game *g, int player_count, char *names[]);
 
 int game_loop(int max_play, int player, int *nexts, struct game *g);
 
