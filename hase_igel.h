@@ -137,3 +137,16 @@ void eat_carrot(int player_idx, struct game *g);
 void eat_s_or_c(int player_idx, struct game *g); //salade ou carrote
 
 void joueur(int j, int *nexts, struct game *g);
+
+void choose_init_game(struct game *g, int player_count, char *names[])
+
+int game_loop(int max_play, int player, int *nexts, struct game *g);
+
+void play_user(int j, int *nexts, struct game *g); //to do
+
+int choosecase_test(int nexts[]);
+
+int want_to_finish_test();
+
+void print_nextmove(int numero_case);
+
