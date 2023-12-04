@@ -174,13 +174,13 @@ void move(int movement, struct player *p){ // paul
             p->position = p->position + movement; //on change la position du joueur
             nb_carrots = p->carrots - cost(movement); //on enlève le nbre de carottes associées
             p->carrots = nb_carrots;
-            printf("Vous avez payé %d carottes. Vous avez maintenant %d carottes.\n", cost(movement), nb_carrots);
+            printf("Vous avez payé %d carottes.\nVous avez désormais %d carottes.\n", cost(movement), nb_carrots);
     }
     else if (movement < 0) { //cas joueur p recule
         p->position = p->position + movement; //joueur p recule de tant de cases
         nb_carrots = p->carrots - cost(movement); //joueur p récupère -cost(movement) (nb négatif)
         p->carrots = nb_carrots;
-        printf("Vous avez maintenant %d carottes.\n", nb_carrots);
+        printf("Vous avez désormais %d carottes.\n", nb_carrots);
     }
 }
 //faudra ajouter le fait que 2 joueurs ne peuvent pas être sur la même case, jsp si on le prend on compte
@@ -409,7 +409,7 @@ void print_player_parametres(int player_idx, int *nexts, struct game *g) // matt
     printf("Joueur %d (%s): \n", player_idx+1, g->players[player_idx].name);       //Name
     printf("\033[31;03mNombre de carottes: %d\033[00m\n", g->players[player_idx].carrots);            //Nb Carottes
     printf("\033[32;03mNombre de salades: %d\033[00m\n", g->players[player_idx].salads);
-    printf("Prohains mouvements possibles : ");
+    printf("Prochains mouvements possibles : ");
     
     if (next_moves(&g->players[player_idx], g, nexts) <= 0) // cas ou le joueur ne peut pas faire de mouvement
     {
@@ -419,7 +419,6 @@ void print_player_parametres(int player_idx, int *nexts, struct game *g) // matt
         for (int i = 0; i < next_moves(&g->players[player_idx], g, nexts); i++)    
         {                                                                 
             printf("%d ", nexts[i]);
-            print_map(&g->players[player_idx], g);
         }
     }
 
@@ -478,6 +477,10 @@ void eat_carrot(int player_idx, struct game *g)
     else if (strncmp(buffer,"perdre\n", 6) == 0)
     {
         g->players[player_idx].carrots -= 10; // on enlève 10 carrottes
+    }
+    else if (strncmp(buffer, "exit", 4) == 0)
+            {
+                exit(0);
     }
     
 }
