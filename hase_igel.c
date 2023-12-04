@@ -457,7 +457,7 @@ void end_play(int player_idx, struct game *g)
         break;
     
     player_finished(player_idx, g);   //Vérifie si qql a fini
-    printf("\033[31;03mCarrot count: %d\033[00m\n",g->players[player_idx].carrots);
+    printf("\033[31;03mNombre de carottes : %d\033[00m\n",g->players[player_idx].carrots);
     print_map(&g->players[player_idx], g);  //Affichage de la Map pour le joeur j  
     printf("\n\n");
 }
@@ -477,7 +477,7 @@ void eat_salad(int player_idx, struct game *g)
     if(g->players[player_idx].salads >= 1)
     {
         g->players[player_idx].salads--; 
-        printf("\033[32;03mTime to eat a salad !\033[00m\n");
+        printf("\033[32;03mL'heure de manger une salade !\033[00m\n");
     }
 }
 
@@ -486,25 +486,27 @@ void eat_carrot(int player_idx, struct game *g)
     char buffer[10] = {};
 
  
-    printf("Do you want to earn or lose 10 Carrots ?\n");
+    printf("Souhaitez vous 'gagner' ou 'perdre' 10 salades ?\n");
 
-    while (strcmp(buffer,"earn\n")|| strcmp(buffer,"lose\n"))   //Ne Termine Jamais
+    //while (strcmp(buffer,"earn\n")|| strcmp(buffer,"lose\n"))   //Ne Termine Jamais
+    while (strncmp(buffer,"gagner\n", 6) && strncmp(buffer,"perdre\n", 6))  
+
     {
         fgets(buffer, 10, stdin);
 
-        if (strcmp(buffer,"earn\n")|| strcmp(buffer,"lose\n"))
+        if (strncmp(buffer,"gagner\n", 6) && strncmp(buffer,"perdre\n", 6))
         {
-            printf("\nPlease choose : earn or lose\n");
+            printf("\nVeuillez choisir : 'gagner' ou 'perdre'\n");
         }
     }
 
-    if (strcmp(buffer,"earn\n") == 0)
+        else if (strncmp(buffer,"gagner\n", 6) == 0)
     {
-        g->players[player_idx].carrots += 10;
+        g->players[player_idx].carrots += 10; // on rajoute 10 carottes
     }
-    else if (strcmp(buffer,"lose\n") == 0)
+    else if (strncmp(buffer,"perdre\n", 6) == 0)
     {
-        g->players[player_idx].carrots -= 10;
+        g->players[player_idx].carrots -= 10; // on enlève 10 carrottes
     }
     
 }
@@ -622,22 +624,23 @@ void eat_s_or_c(int player_idx, struct game *g)
         break;
     }
 
-    printf("\n--- Good Game! ---  (run \"exit\" to exit)\n\n");
+    printf("\n--- Bon jeu ! ---  (run \"exit\" pour quitter)\n\n");
 }
 
 void joueur(int j, int *nexts, struct game *g)
 {
-    char buffer[10] = "-1";
     char buffer[10] = "-1000";
 
     if (next_moves(&g->players[j], g, nexts) > 0)
     {
         if (is_finishable(&g->players[j], g))
         {
-            printf("-- You can finish! -- \n");
+            printf("-- Vous pouvez finir -- \n");
         }
         
-        while (in_array(atoi(buffer), sizeof(nexts), nexts) == -1000)
+        //while (in_array(atoi(buffer), sizeof(nexts), nexts) == -1000)
+        while (in_array(atoi(buffer), 32, nexts) == -1000)
+
         {
             printf("[Aide] Veuillez choisir un mouvement :\n");
             fgets(buffer, 10, stdin);
@@ -645,7 +648,9 @@ void joueur(int j, int *nexts, struct game *g)
             {
                 exit(0);
             }
-            if(in_array(atoi(buffer), sizeof(nexts), nexts) != -1000)
+            //if(in_array(atoi(buffer), sizeof(nexts), nexts) != -1000)
+            if(in_array(atoi(buffer), 32, nexts) != -1000)
+
             {
                 move(atoi(buffer), &g->players[j]);
             }
@@ -721,7 +726,7 @@ int game_loop(int max_play, int player, int *nexts, struct game *g)
         end_play(player, g);
         if (is_game_finished(g))  
         {   
-            printf("--- Game Over! ---\n");
+            printf("--- Fin de la partie ! ---\n");
             print_race_summary(g);
             return 0;
         }
