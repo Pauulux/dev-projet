@@ -103,10 +103,10 @@ void move(int movement, struct player *p) // paul
 // renvoie la pos de la première case igel dispo (donc sans joueur dessus)
 // située avant la position idx ou bien case depart si aucun résultat
 
-int find_previous_igel(int idx, const struct game *g) // Paul 
+int find_previous_igel(int idx, const struct game *g); // Paul 
     
 
-char space_character(int space_idx, const struct player *p, const struct game *g) 
+char space_character(int space_idx, const struct player *p, const struct game *g); 
 
 void print_map(const struct player *p, const struct game *g);
 
@@ -126,3 +126,14 @@ void print_game_parametres(struct game *g);
 
 void print_player_parametres(int player_idx, int *nexts, struct game *g);
 
+void meet_hase(int player_idx, struct player *p);
+  
+void prepare_play(int player_idx, struct game *g);
+    
+void end_play(int player_idx, struct game *g);
+
+void eat_salad(int player_idx, struct game *g);
+
+void eat_carrot(int player_idx, struct game *g);
+
+void eat_s_or_c(int player_idx, struct game *g); //salade ou carrote

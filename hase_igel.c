@@ -40,7 +40,7 @@ struct game {
 
     int map_length; // nombre de cases du plateau (hors case d'arrivée)
 
-    const enum land *map // les cases du plateau
+    const enum land *map; // les cases du plateau
     // pour accéder au contenu spécifique du tableau (case) g.map[1] == HASE;
 };
 
@@ -51,8 +51,7 @@ static const enum land mini_map[] = {
 
 // map par défaut :
 static const enum land default_map[] = {
-    HOME,
-    HASE, CARROT, HASE, CARROT, CARROT, HASE, FLAG, SALAD, CARROT, SALAD,
+    HOME, HASE, CARROT, HASE, CARROT, CARROT, HASE, FLAG, SALAD, CARROT, SALAD,
     IGEL, CARROT, CARROT, HASE, IGEL, FLAG, SALAD, CARROT, IGEL, CARROT,
     CARROT, SALAD, SALAD, IGEL, HASE, CARROT, CARROT, CARROT, SALAD, IGEL,
     HASE, FLAG, CARROT, HASE, SALAD, CARROT, IGEL, CARROT, HASE, CARROT,
@@ -327,10 +326,18 @@ extern int can_stay(const struct player *p, const struct game *g);
 int next_moves(const struct player *p, const struct game *g, int nexts[])
     {int idx = p->position; //indice de la case qu'on regarde
     int sum = next_moves_forward(p, g, nexts);//remplit nexts des cases possible devant
+    
+    
     if(is_finishable(p, g)){ //si jeu finissable remplir tab de 1 elt
         nexts[sum] = g->map_length - p->position;
         sum++;   
     }
+
+    if (can_stay(p,g) != 0){ //si on peut rester remplir tab de 1 elt
+        nexts[sum] = idx;
+        sum++;
+    }
+
     if(p->position > 0){
         nexts[sum] = find_previous_igel(idx, g) - p->position;    //Pb : Move regarde si le mouvement est négatif mais next_moves
         sum++;                                      //ne donne jamais de nombre négatif, donc le joueur ne recule jamais
@@ -379,5 +386,91 @@ void print_player_parametres(int player_idx, int *nexts, struct game *g) // matt
     for (int i = 0; i < next_moves(&g->players[player_idx], g, nexts); i++)    
     {                                                                 
         printf("%d ", nexts[i]);
+    }
+}
+
+void prepare_play(int player_idx, struct game *g)
+{
+    if (g->players[player_idx].salad_seasonned >= 1)
+    {
+        g->players[player_idx].carrots = 10*g->players[player_idx].position;
+        g->players[player_idx].salad_seasonned --;
+    }
+}
+
+void end_play(int player_idx, struct game *g)
+{
+    player_finished(player_idx, g);   //Vérifie si qql a fini
+    
+    print_map(&g->players[player_idx], g);  //Affichage de la Map pour le joeur j                                 
+    printf("\n\n");
+}
+
+extern int can_stay(const struct player *p, const struct game *g)
+{
+    if ((g->map[p->position] == SALAD) || (g->map[p->position] == CARROT)) // salade ou carrote
+    {
+        return 1;
+    }
+    
+    return 0;
+}
+
+void eat_salad(int player_idx, struct game *g)
+{
+    g->players[player_idx].salads--;
+    g->players[player_idx].salad_seasonned++;  
+}
+
+void eat_carrot(int player_idx, struct game *g)
+{
+    char buffer[10] = {};
+
+    if (is_a_bot(&g->players[player_idx]))
+    {
+        if(rand()%2)
+        {
+            g->players[player_idx].carrots += 10;
+        }
+        else
+        {
+            g->players[player_idx].carrots -= 10;
+        }
+        
+    }
+    else
+    {
+        printf("Do you want to earn or lose 10 Carrots ?\n");
+    
+        while (strcmp(buffer,"earn\n")|| strcmp(buffer,"lose\n"))   //Ne Termine Jamais
+        {
+            fgets(buffer, 10, stdin);
+
+            if (strcmp(buffer,"earn\n")|| strcmp(buffer,"lose\n"))
+            {
+                printf("\nPlease choose : earn or lose\n");
+            }
+        }
+
+        if (strcmp(buffer,"earn\n") == 0)
+        {
+            g->players[player_idx].carrots += 10;
+        }
+        else if (strcmp(buffer,"lose\n") == 0)
+        {
+            g->players[player_idx].carrots -= 10;
+        }
+    }
+}
+
+void eat_s_or_c(int player_idx, struct game *g)
+{
+    if (g->map[g->players[player_idx].position] == SALAD)
+    {
+        eat_salad(player_idx, g);
+    }
+    else if (g->map[g->players[player_idx].position] == CARROT)
+    {
+        eat_carrot(player_idx, g);
     }
 }
