@@ -468,41 +468,81 @@ void eat_carrot(int player_idx, struct game *g)
 {
     char buffer[10] = {};
 
-    if (is_a_bot(&g->players[player_idx]))
+ 
+    printf("Do you want to earn or lose 10 Carrots ?\n");
+
+    while (strcmp(buffer,"earn\n")|| strcmp(buffer,"lose\n"))   //Ne Termine Jamais
     {
-        if(rand()%2)
+        fgets(buffer, 10, stdin);
+
+        if (strcmp(buffer,"earn\n")|| strcmp(buffer,"lose\n"))
         {
-            g->players[player_idx].carrots += 10;
+            printf("\nPlease choose : earn or lose\n");
         }
-        else
-        {
-            g->players[player_idx].carrots -= 10;
-        }
-        
     }
-    else
+
+    if (strcmp(buffer,"earn\n") == 0)
     {
-        printf("Do you want to earn or lose 10 Carrots ?\n");
+        g->players[player_idx].carrots += 10;
+    }
+    else if (strcmp(buffer,"lose\n") == 0)
+    {
+        g->players[player_idx].carrots -= 10;
+    }
     
-        while (strcmp(buffer,"earn\n")|| strcmp(buffer,"lose\n"))   //Ne Termine Jamais
-        {
-            fgets(buffer, 10, stdin);
+}
 
-            if (strcmp(buffer,"earn\n")|| strcmp(buffer,"lose\n"))
-            {
-                printf("\nPlease choose : earn or lose\n");
-            }
-        }
-
-        if (strcmp(buffer,"earn\n") == 0)
+int choosecase_test(int nexts[])
+{
+    printf("Choix");
+    char buffer[4] = {};
+    fgets(buffer, 3, stdin);
+    int i = 0;
+    while (atoi(buffer) != nexts[i])
+    {
+        while( (i < 4) && (atoi(buffer) != nexts[i]))
         {
-            g->players[player_idx].carrots += 10;
+            i++;
         }
-        else if (strcmp(buffer,"lose\n") == 0)
+        if((i >= 3) && (atoi(buffer) != nexts[i]))
         {
-            g->players[player_idx].carrots -= 10;
+            i = 0;
+            printf("Ksos");
+            fgets(buffer, 3, stdin);
         }
     }
+    return 0;
+}
+
+/* int choose_case(int j, int *nexts, struct game *g)
+{
+     while(in_array(atoi(buffer), sizeof(nexts), nexts))
+     {
+         printf("[Aide] Veuillez choisir un mouvement :\n");
+         fgets(buffer, 10, stdin);
+         if(in array(atoi(buffer), sizeof(nexts), nexts) != -1)
+         {
+             move(atoi(buffer), &g->players[j]);
+         }
+     }
+}*/
+
+int want_to_finish_test()
+{
+    printf("\n[Aide] Souhaitez-vous finir la partie ? Tapez 1 (oui) ou 2 (non).\n");
+    char buffer[10] = {};
+    fgets(buffer, 3, stdin);
+    while( (strncmp(buffer, "0\n", 2)) && (strncmp(buffer, "1\n", 2)) )
+    while( (strncmp(buffer, "oui\n", 3)) && (strncmp(buffer, "non\n", 2)) ) // vérifie saisie de 1, oui, 2 ou non
+    {
+        fgets(buffer, 10, stdin);
+        if((strncmp(buffer, "0\n", 2)) && (strncmp(buffer, "1\n", 2)) )
+        if((strncmp(buffer, "yes\n", 3)) && (strncmp(buffer, "no\n", 2)) )
+        {
+            printf("\nVeuillez choisir : 0 (Non) ou 1 (Oui):\n");
+        }
+    }
+    return atoi(buffer);
 }
 
 void eat_s_or_c(int player_idx, struct game *g)
@@ -546,5 +586,75 @@ void eat_s_or_c(int player_idx, struct game *g)
 
     default:
         break;
+    }
+}
+
+void joueur(int j, int *nexts, struct game *g)
+{
+    char buffer[10] = "-1";
+    char buffer[10] = "-1000";
+
+    if (next_moves(&g->players[j], g, nexts) > 0)
+    {
+        while (in_array(atoi(buffer), sizeof(nexts), nexts) == -1)
+        while (in_array(atoi(buffer), sizeof(nexts), nexts) == -1000)
+        {
+            printf("[Aide] Veuillez choisir un mouvement :\n");
+            fgets(buffer, 10, stdin);
+            if(in_array(atoi(buffer), sizeof(nexts), nexts) != -1)
+            {
+                move(atoi(buffer), &g->players[j]);
+            }
+        }
+        
+    }
+}
+
+void play_user(int j, int *nexts, struct game *g){
+    printf("\n[Aide] C'est votre tour, à vous de jouer !\n");
+    if(is_finishable(&g->players[j], g) != 0) //si le joueur peut finir la partie lui proposer
+    {
+        want_to_finish_test();
+        if (want_to_finish_test() == 1)
+        {
+            printf("\n[Aide] Prochain mouvement : %d\n", g->map_length - g->players[j].position);
+            move(g->map_length - g->players[j].position, &g->players[j]);
+        }
+        else if (want_to_finish_test() == 0)//le faire jouer où il souhaite aller
+        {
+            joueur(j, nexts, g);
+            // char buffer[10] = "-1";
+            // if(next_moves(&g->players[j], g, nexts) > 0)
+            // {
+            //     while(in_array(atoi(buffer), sizeof(nexts), nexts) == -1)
+            //     {
+            //         printf("Please choose a move:\n");
+            //         fgets(buffer, 10, stdin);
+            //         if(in_array(atoi(buffer), sizeof(nexts), nexts) != -1)
+            //         {       
+            //             move(atoi(buffer), &g->players[j]);
+            //         }
+            //     }
+            // }
+        }
+    }
+    else
+    {
+        joueur(j, nexts, g);
+        // char buffer[10] = "-1";
+        // if(next_moves(&g->players[j], g, nexts) > 0)
+        // {
+        //     {
+        //         while(in_array(atoi(buffer), sizeof(nexts), nexts) == -1)
+        //         {
+        //             printf("Please choose a move:\n");
+        //             fgets(buffer, 10, stdin);
+        //             if(in_array(atoi(buffer), sizeof(nexts), nexts) != -1)
+        //             {       
+        //                 move(atoi(buffer), &g->players[j]);
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
