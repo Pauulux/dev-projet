@@ -1,61 +1,52 @@
+#include <stdio.h>
+
 #define MAX_PLAYERS     6
 #define FIRST_SPACE     0
-#define CURRENT_PLAYER_REP land_representation[9]
-#define OTHER_PLAYER_REP land_representation[10]
-#include <stdio.h>
 
 enum land {
     CARROT, HASE, SALAD, IGEL, FLAG, SECOND, THIRD, FORTH, HOME,
     LAND_COUNT, UNUSED=-1,
 };
 
-static const char *land_representation = "CHSIF234>*@"; // cases du jeu 
-// @ =  position de l'autre joueur 
-// * = position du joueur courant 
-// C = case carotte
-// H = case hase
-// S = salade
-// I : case igel 
-
-
-
-enum party {
-    MINI_PARTY=1, FUN_PARTY, LONG_PARTY,
-};
-
 struct player {
-    const char *name; // nom du joueur
+    const char *name; // Le nom du joueur
 
-    int position; // position du joueur sur la carte.
+    int position; // La position du joueur sur la carte
 
-    int carrots; // nombre de carottes actuellement possédées par un joueur
-    int salads; // nombre de salades possédées par un joueur
+    int carrots; // Le nombre de carottes actuellement possédées par un joueur
+    int salads; // Le nombre de salades possédées par un joueur
+
+    int salad_seasonned; // Ignoré
 };
 
 struct game {
-    int player_count; // nombre de joueurs pour cette partie
-    struct player players[MAX_PLAYERS]; // Le tableau des joueurs (valide de 0 à player_count - 1)
+    int player_count; // Le nombre de joueurs pour cette partie
+    struct player players[MAX_PLAYERS]; // Le tableau des joueurs (valide
+                                        // de 0 à player_count - 1)
 
-    int finished_count; // nombre de joueurs ayant atteint la ligne d'arrivée
-    int players_finished[MAX_PLAYERS]; // Le tableau des indices des joueurs arrivés (valide de 0 à finished_count - 1).
+    int finished_count; // Le nombre de joueurs ayant atteint la ligne d'arrivée
+    int players_finished[MAX_PLAYERS]; // Le tableau des indices des joueurs
+                                       // arrivés (valide de 0 à finished_count - 1).
 
-    int map_length; // nombre de cases du plateau (hors case d'arrivée)
+    // le vainqueur est donc `g.players[g.players_finished[0]]`
 
-    const enum land *map; // les cases du plateau
-    // pour accéder au contenu spécifique du tableau (case) g.map[1] == HASE;
+    int map_length; // Le nombre de cases du plateau (hors case d'arrivée)
+
+    const enum land *map; // les cases du plateaux
+    // à l'instar de `player` et `players_finished`, ce tableau peut être accédé
+    // en utilisant la notation tableau: e.g, g.map[1] == HASE;
 };
 
-// map pour faire des tests :
+
 static const enum land mini_map[] = {
     HOME, HASE, CARROT, SALAD,  IGEL, CARROT, SALAD, CARROT, HASE, CARROT
 };
 
-// map par défaut :
 static const enum land default_map[] = {
     HOME,
     HASE, CARROT, HASE, CARROT, CARROT, HASE, FLAG, SALAD, CARROT, SALAD,
-    IGEL, CARROT, CARROT, HASE, IGEL, FLAG, SALAD, CARROT, IGEL, CARROT,
-    CARROT, SALAD, SALAD, IGEL, HASE, CARROT, CARROT, CARROT, SALAD, IGEL,
+    IGEL, CARROT, CARROT, HASE, IGEL, FLAG, SALAD, FORTH, IGEL, CARROT,
+    CARROT, SALAD, SALAD, IGEL, HASE, CARROT, FORTH, CARROT, SALAD, IGEL,
     HASE, FLAG, CARROT, HASE, SALAD, CARROT, IGEL, CARROT, HASE, CARROT,
     SALAD, SALAD, IGEL, CARROT, CARROT, HASE, SALAD, FLAG, CARROT, IGEL,
     HASE, CARROT, SALAD, CARROT, CARROT, IGEL, SALAD, HASE, CARROT, FLAG,

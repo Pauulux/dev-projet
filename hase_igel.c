@@ -12,25 +12,13 @@ enum land {
     LAND_COUNT, UNUSED=-1,
 };
 
-static const char *land_representation = "CHSIF234>*@"; // cases du jeu 
-// @ =  pos de l'autre joueur 
-// * = pos du joueur courant 
-// C = case carotte
-// H = case hase
-// S = salade
-// I : case igel 
-
-
-
 enum party {
     MINI_PARTY=1, FUN_PARTY, LONG_PARTY,
 };
 
 struct player {
     const char *name; // nom du joueur
-
     int position; // position du joueur sur la carte.
-
     int carrots; // nombre de carottes actuellement possédées par un joueur
     int salads; // nombre de salades possédées par un joueur
 };
@@ -52,6 +40,8 @@ struct game {
 static const enum land mini_map[] = {
     HOME, HASE, CARROT, SALAD,  IGEL, CARROT, SALAD, CARROT, HASE, CARROT
 };
+
+
 
 // map par défaut :
 static const enum land default_map[] = {
@@ -78,22 +68,19 @@ int cost(int movement){ //Fanny
     return sum;
 }
 
-
-int rank(const struct player *p, int player_count, const struct player players[]) //paul
+int in_array(int valeur, int len, const int tableau[]) //Matteo
 {
     int i = 0;
-    int higher_position = 0;
     
-    while (i < player_count)
+    while (i < len)
     {
-        if (p->position < players[i].position)
-            higher_position++;
-            
+        if (valeur == tableau[i])
+            return i;
         i++;
     }
     
-    return higher_position;
-};
+    return -1000;
+}
 
 int is_game_finished(const struct game *g) //paul
 {
@@ -103,7 +90,6 @@ int is_game_finished(const struct game *g) //paul
 }
 
 // Retourne vrai (non nul) si le joueur `p` peut franchir la ligne d'arrivée.
-
 int is_finishable(const struct player *p, const struct game *g){ //Fanny
     if (p->salads == 0){//pas de salade
         int distance = g->map_length - p->position;
@@ -121,6 +107,23 @@ int is_finishable(const struct player *p, const struct game *g){ //Fanny
     else return 0;
 }
 
+
+
+int rank(const struct player *p, int player_count, const struct player players[]) //paul
+{
+    int i = 0;
+    int higher_position = 0;
+    
+    while (i < player_count)
+    {
+        if (p->position < players[i].position)
+            higher_position++;
+            
+        i++;
+    }
+    
+    return higher_position;
+};
 
 //permet d'afficher le classement
 void print_race_summary(const struct game *g) //paul
@@ -146,28 +149,7 @@ void print_race_summary(const struct game *g) //paul
     }
 }
 
-/* Retourne vrai (non nul) s'il n'y a aucun joueur sur la case d'indice `idx` */
-
-int is_space_available(int idx, const struct game *g) // Matteo
-{
-    int i  = 0;
-
-        while (i <= g->player_count)    
-        {
-        if (idx == g->players[i].position)
-        {
-            return 0;
-        }
-
-        i++;
-    }
-
-    return 1;
-};
-
-
 // Déplace le joueur `p` de `movement` positions en consommant les carottes nécessaires pour réaliser le déplacement.
-
 void move(int movement, struct player *p){ // paul
     int nb_carrots = 0;
     if ( (movement > 0) && (p->carrots > cost(movement)) ){ //cas joueur p avance et si joueur p a assez de carotte il peut avancer
@@ -183,6 +165,26 @@ void move(int movement, struct player *p){ // paul
         printf("Vous avez désormais %d carottes.\n", nb_carrots);
     }
 }
+
+/* Retourne vrai (non nul) s'il n'y a aucun joueur sur la case d'indice `idx` */
+int is_space_available(int idx, const struct game *g) // Matteo
+{
+    int i  = 0;
+
+    while (i <= g->player_count)    
+    {
+        if (idx == g->players[i].position)
+        {
+            return 0;
+        }
+        i++;
+    }
+
+    return 1;
+};
+
+
+
 //faudra ajouter le fait que 2 joueurs ne peuvent pas être sur la même case, jsp si on le prend on compte
 
 /*  à faire: 
@@ -207,6 +209,10 @@ int find_previous_igel(int idx, const struct game *g){ // Paul
     return FIRST_SPACE; //retourne la case de départ
 }
 
+static const char *land_representation = "CHSIF234>*@";
+#define CURRENT_PLAYER_REP land_representation[9]
+#define OTHER_PLAYER_REP land_representation[10]
+
 char space_character(int space_idx, const struct player *p, const struct game *g)
 {
     if (p != NULL && p->position == space_idx) // vérifie aussi si la position du joueur n'est pas nulle
@@ -221,22 +227,9 @@ char space_character(int space_idx, const struct player *p, const struct game *g
         }
     }
     
-    return land_representation[space_idx];
+    return land_representation[g->map[space_idx]]; 
 }
 
-int in_array(int valeur, int len, const int tableau[]) //Matteo
-{
-    int i = 0;
-    
-    while (i < len)
-    {
-        if (valeur == tableau[i])
-            return i;
-        i++;
-    }
-    
-    return -1000;
-}
 
 /**
   Affiche la carte d'une partie `g` du point de vue du player `p` sur la sortie standard, au format :
@@ -250,21 +243,18 @@ int in_array(int valeur, int len, const int tableau[]) //Matteo
   > H C S I C S * @ C |31
  */
 
-void print_map(const struct player *p, const struct game *g) 
+void print_map(const struct player *p, const struct game *g)
 {
     for (int i = 0 ; i < g->map_length ; i++)
     {
-        printf("\033[34;01m%c \033[00m ", space_character(i, p, g));
+        printf("\033[34;01m%c \033[00m", space_character(i, p, g));
     }
+
     printf("\033[34;01m|\033[00m");
 
     for (int i = g->finished_count ; i > 0 ; i--)
-    {
-        if (g->players_finished[i]!=0)
-        {
+    {   
         printf("\033[36;01m%d\033[00m", g->players_finished[i-1]+1);  
-        }
-        
     }
     printf("\n");
 }
@@ -332,7 +322,9 @@ extern int can_stay(const struct player *p, const struct game *g)
 }
 
 int next_moves(const struct player *p, const struct game *g, int nexts[])
-    {int idx = p->position; //indice de la case qu'on regarde
+    {
+    
+    int idx = p->position; //indice de la case qu'on regarde
     int sum = next_moves_forward(p, g, nexts);//remplit nexts des cases possible devant
     
     
@@ -356,20 +348,7 @@ int next_moves(const struct player *p, const struct game *g, int nexts[])
 
 void init_game(struct game *g, int player_count, char *names[], int carrot, int salad) //matteo
 {
-    //char *map = getenv("MAP");
-
-    //choix de la map 
-    //if (strncmp(map, "mini", 4) == 0)
-    //{
-    //    g->map = mini_map;
-    //    g->map_length = 10;
-    //}
-    //else
-    //{
-    //    g->map = default_map;
-    //    g->map_length = 64; 
-    //}
-
+ 
     g->player_count = player_count-1;
     
     for (int i = 0; i < g->player_count+1; i++)
@@ -379,10 +358,6 @@ void init_game(struct game *g, int player_count, char *names[], int carrot, int 
         g->players[i].salads = salad;
         g->players[i].position = FIRST_SPACE;
     } 
-
-    system("clear");
-    printf("--- Hase & Igel ---\n\n");  // début du jeu  
-
 }
 void player_finished(int player_idx, struct game *g) //matteo
 {
@@ -395,7 +370,7 @@ void player_finished(int player_idx, struct game *g) //matteo
 
 void print_game_parametres(struct game *g) // matteo
 {
-    printf("Players:\n");
+    printf("Joueurs:\n");
     for (int i = 0; i < g->player_count; i++)
     {
         printf("%d: %s\n", i+1, g->players[i].name);
@@ -404,6 +379,7 @@ void print_game_parametres(struct game *g) // matteo
     print_map(&g->players[0], g);
     printf("\n");
 }
+
 void print_player_parametres(int player_idx, int *nexts, struct game *g) // matteo
 {
     printf("Joueur %d (%s): \n", player_idx+1, g->players[player_idx].name);       //Name
@@ -424,6 +400,97 @@ void print_player_parametres(int player_idx, int *nexts, struct game *g) // matt
 
     printf("\n");
     print_map(&g->players[player_idx], g);
+}
+
+void joueur(int j, int *nexts, struct game *g)
+{
+    char buffer[10] = "-1000";
+
+    if (next_moves(&g->players[j], g, nexts) > 0)
+    {
+        if (is_finishable(&g->players[j], g))
+        {
+            printf("-- Vous pouvez finir -- \n");
+        }
+        
+        //while (in_array(atoi(buffer), sizeof(nexts), nexts) == -1000)
+        while (in_array(atoi(buffer), 32, nexts) == -1000)
+
+        {
+            printf("[Aide] Veuillez choisir un mouvement :\n");
+            fgets(buffer, 10, stdin);
+
+            if(strncmp(buffer, "exit", 4) == 0)
+            {
+                exit(0);
+            }
+            //if(in_array(atoi(buffer), sizeof(nexts), nexts) != -1000)
+            if(in_array(atoi(buffer), 32, nexts) != -1000)
+            {
+                move(atoi(buffer), &g->players[j]);
+            }
+        }
+        
+    }
+}
+
+void choose_init_game(struct game *g, int player_count, char *names[]) //Pour la version finale
+{
+    char party[51] = {};
+    int party_type = 0;
+
+
+    system("clear");
+    printf("--- Hase & Igel ---\n\n"); 
+    printf("///////////////////////////////////////////////////////////\n");
+    printf("///                                                     ///\n");
+    printf("///                   Veuillez choisir une partie       ///\n");
+    printf("///                                                     ///\n");
+    printf("///                   1 : mini party                    ///\n");
+    printf("///                   2 : fun  party                    ///\n");
+    printf("///                   3 : long party                    ///\n");
+    printf("///                                                     ///\n");
+    printf("///////////////////////////////////////////////////////////\n");
+
+
+    while (strncmp(party, "1\n", 2) && strncmp(party, "2\n", 2) && strncmp(party, "3\n", 2))
+    {
+        fgets(party, 50, stdin);
+
+        if (strncmp(party, "1\n", 2) && strncmp(party, "2\n", 2) && strncmp(party, "3\n", 2))
+        {
+            printf("Choisissez un mouvement: 1, 2, or 3\n");
+        }
+    }
+
+    party_type = atoi(party);
+
+
+    switch (party_type)
+    {
+    case MINI_PARTY: 
+        init_game(g, player_count, names, 10, 1);
+        g->map_length = 10;
+        g->map = mini_map;
+        break;
+    
+    case FUN_PARTY:
+        init_game(g, player_count, names, 30, 2);
+        g->map_length = 64;
+        g->map = default_map;
+        break;
+
+    case LONG_PARTY:
+        init_game(g, player_count, names, 10, 1);
+        g->map_length = 64;
+        g->map = default_map;
+        break;
+
+    default:
+        break;
+    }
+
+    printf("\n--- Good Game! ---  (run \"exit\" to exit)\n\n");
 }
 
 void prepare_play(int player_idx, struct game *g)
@@ -455,7 +522,6 @@ void eat_carrot(int player_idx, struct game *g)
 {
     char buffer[10] = {};
 
- 
     printf("Souhaitez vous 'gagner' ou 'perdre' 10 salades ?\n");
 
     //while (strcmp(buffer,"earn\n")|| strcmp(buffer,"lose\n"))   //Ne Termine Jamais
@@ -505,204 +571,6 @@ void end_play(int player_idx, struct game *g)
     printf("\n\n");
 }
 
-
-int choosecase_test(int nexts[])
-{
-    printf("Choix");
-    char buffer[4] = {};
-    fgets(buffer, 3, stdin);
-    int i = 0;
-    while (atoi(buffer) != nexts[i])
-    {
-        while( (i < 4) && (atoi(buffer) != nexts[i]))
-        {
-            i++;
-        }
-        if((i >= 3) && (atoi(buffer) != nexts[i]))
-        {
-            i = 0;
-            printf("Ksos");
-            fgets(buffer, 3, stdin);
-        }
-    }
-    return 0;
-}
-
-/* int choose_case(int j, int *nexts, struct game *g)
-{
-     while(in_array(atoi(buffer), sizeof(nexts), nexts))
-     {
-         printf("[Aide] Veuillez choisir un mouvement :\n");
-         fgets(buffer, 10, stdin);
-         if(in array(atoi(buffer), sizeof(nexts), nexts) != -1)
-         {
-             move(atoi(buffer), &g->players[j]);
-         }
-     }
-}*/
-
-int want_to_finish_test()
-{
-    printf("\n[Aide] Souhaitez-vous finir la partie ? Tapez 1 (oui) ou 2 (non).\n");
-    char buffer[10] = {};
-    fgets(buffer, 3, stdin);
-    while( (strncmp(buffer, "oui\n", 3)) && (strncmp(buffer, "non\n", 2)) ) // vérifie saisie de 1, oui, 2 ou non
-    {
-        fgets(buffer, 10, stdin);
-        if((strncmp(buffer, "yes\n", 3)) && (strncmp(buffer, "no\n", 2)) )
-        {
-            printf("\nVeuillez choisir : Oui ou Non:\n");
-        }
-    }
-    return atoi(buffer);
-}
-
-void eat_s_or_c(int player_idx, struct game *g)
-{
-    if (g->map[g->players[player_idx].position] == SALAD)
-    {
-        eat_salad(player_idx, g);
-    }
-    else if (g->map[g->players[player_idx].position] == CARROT)
-    {
-        eat_carrot(player_idx, g);
-    }
-}
-
-void choose_init_game(struct game *g, int player_count, char *names[]) //Pour la version finale
-{
-    char party[51] = {};
-    int party_type = 0;
-
-    system("clear");
-    printf("--- Hase & Igel ---\n\n"); 
-    printf("///////////////////////////////////////////////////////////\n");
-    printf("///                                                     ///\n");
-    printf("///                   Choose a party :                  ///\n");
-    printf("///                                                     ///\n");
-    printf("///                   1 : mini party                    ///\n");
-    printf("///                   2 : fun  party                    ///\n");
-    printf("///                   3 : long party                    ///\n");
-    printf("///                                                     ///\n");
-    printf("///////////////////////////////////////////////////////////\n");
-    while (strncmp(party, "1\n", 2) && strncmp(party, "2\n", 2) && strncmp(party, "3\n", 2))
-    {
-        fgets(party, 50, stdin);
-        if (strncmp(party, "1\n", 2) && strncmp(party, "2\n", 2) && strncmp(party, "3\n", 2))
-        {
-            printf("Please choose : 1, 2, or 3\n");
-        }
-    }
-    party_type = atoi(party);
-
-    switch (party_type)
-    {
-    case MINI_PARTY: //1
-        init_game(g, player_count, names, 10, 1);
-        g->map_length = 10;
-        g->map = mini_map;
-        break;
-    
-    case FUN_PARTY: //2
-        init_game(g, player_count, names, 30, 2);
-        g->map_length = 64;
-        g->map = default_map;
-        break;
-
-    case LONG_PARTY: //3
-        init_game(g, player_count, names, 10, 1);
-        g->map_length = 64;
-        g->map = default_map;
-        break;
-
-    default:
-        break;
-    }
-
-    printf("\n--- Bon jeu ! ---  (run \"exit\" pour quitter)\n\n");
-}
-
-void joueur(int j, int *nexts, struct game *g)
-{
-    char buffer[10] = "-1000";
-
-    if (next_moves(&g->players[j], g, nexts) > 0)
-    {
-        if (is_finishable(&g->players[j], g))
-        {
-            printf("-- Vous pouvez finir -- \n");
-        }
-        
-        //while (in_array(atoi(buffer), sizeof(nexts), nexts) == -1000)
-        while (in_array(atoi(buffer), 32, nexts) == -1000)
-
-        {
-            printf("[Aide] Veuillez choisir un mouvement :\n");
-            fgets(buffer, 10, stdin);
-            if(strncmp(buffer, "exit", 4) == 0)
-            {
-                exit(0);
-            }
-            //if(in_array(atoi(buffer), sizeof(nexts), nexts) != -1000)
-            if(in_array(atoi(buffer), 32, nexts) != -1000)
-
-            {
-                move(atoi(buffer), &g->players[j]);
-            }
-        }
-        
-    }
-}
-
-void play_user(int j, int *nexts, struct game *g){
-    printf("\n[Aide] C'est votre tour, à vous de jouer !\n");
-    if(is_finishable(&g->players[j], g) != 0) //si le joueur peut finir la partie lui proposer
-    {
-        want_to_finish_test();
-        if (want_to_finish_test() == 1)
-        {
-            printf("\n[Aide] Prochain mouvement : %d\n", g->map_length - g->players[j].position);
-            move(g->map_length - g->players[j].position, &g->players[j]);
-        }
-        else if (want_to_finish_test() == 0)//le faire jouer où il souhaite aller
-        {
-            joueur(j, nexts, g);
-            // char buffer[10] = "-1";
-            // if(next_moves(&g->players[j], g, nexts) > 0)
-            // {
-            //     while(in_array(atoi(buffer), sizeof(nexts), nexts) == -1)
-            //     {
-            //         printf("Please choose a move:\n");
-            //         fgets(buffer, 10, stdin);
-            //         if(in_array(atoi(buffer), sizeof(nexts), nexts) != -1)
-            //         {       
-            //             move(atoi(buffer), &g->players[j]);
-            //         }
-            //     }
-            // }
-        }
-    }
-    else
-    {
-        joueur(j, nexts, g);
-        // char buffer[10] = "-1";
-        // if(next_moves(&g->players[j], g, nexts) > 0)
-        // {
-        //     {
-        //         while(in_array(atoi(buffer), sizeof(nexts), nexts) == -1)
-        //         {
-        //             printf("Please choose a move:\n");
-        //             fgets(buffer, 10, stdin);
-        //             if(in_array(atoi(buffer), sizeof(nexts), nexts) != -1)
-        //             {       
-        //                 move(atoi(buffer), &g->players[j]);
-        //             }
-        //         }
-        //     }
-        // }
-    }
-}
-
 int game_loop(int max_play, int player, int *nexts, struct game *g)
 {
     int nb_tour = 1; //il faut que nb_tour augmente a chaque fois que i dépasse player_count
@@ -732,3 +600,16 @@ int game_loop(int max_play, int player, int *nexts, struct game *g)
     } 
     return 0;
 }
+
+/* int choose_case(int j, int *nexts, struct game *g)
+{
+     while(in_array(atoi(buffer), sizeof(nexts), nexts))
+     {
+         printf("[Aide] Veuillez choisir un mouvement :\n");
+         fgets(buffer, 10, stdin);
+         if(in array(atoi(buffer), sizeof(nexts), nexts) != -1)
+         {
+             move(atoi(buffer), &g->players[j]);
+         }
+     }
+}*/
